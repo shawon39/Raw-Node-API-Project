@@ -32,14 +32,6 @@ handler.handleReqRes = (req, res) => {
     };
 
     const chosenHandler = routes[trimmedPath] ? routes[trimmedPath] : notFoundHandler;
-    chosenHandler(requestProperties, (statusCode, payload) => {
-        const stsCode = typeof statusCode === 'number' ? statusCode : 500;
-        const pyLoad = typeof payload === 'object' ? payload : {};
-        const payloadString = JSON.stringify(pyLoad);
-        // return the final response
-        res.writeHead(stsCode);
-        res.end(payloadString);
-    });
 
     const decoder = new StringDecoder('utf-8');
     let realData = '';
@@ -49,7 +41,14 @@ handler.handleReqRes = (req, res) => {
     });
     req.on('end', () => {
         realData += decoder.end();
-        console.log(realData);
+        chosenHandler(requestProperties, (statusCode, payload) => {
+            const stsCode = typeof statusCode === 'number' ? statusCode : 500;
+            const pyLoad = typeof payload === 'object' ? payload : {};
+            const payloadString = JSON.stringify(pyLoad);
+            // return the final response
+            res.writeHead(stsCode);
+            res.end(payloadString);
+        });
         // response handle
         res.end('Hello World !!');
     });
